@@ -1,0 +1,43 @@
+#!/usr/bin/with-contenv bash
+
+# make our folders
+echo "Creating base folders"
+mkdir -p \
+	/config/www \
+	/var/www/localhost/filegator
+
+# install filegator if necessary
+[[ -f /filegator.zip ]] && \
+ echo "New container detected, installing FileGator" && \
+ unzip -qq \
+	/filegator.zip -d \
+	/var/www/localhost && \
+ echo -e '\n# FileGator user authorization\nfastcgi_param  PHP_AUTH_USER $remote_user;\nfastcgi_param  PHP_AUTH_PW $http_authorization;' >> \
+	/etc/nginx/fastcgi_params && \
+ rm -rf /filegator && rm -f /filegator.zip && \
+ chown -R abc:abc /var/www/localhost/filegator
+
+symlinks=( \
+/var/www/localhost/filegator/private )
+
+for i in "${symlinks[@]}"
+do
+[[ -e "$i" && ! -L "$i" && -e /config/www/"$(basename "$i")" && ! -L /config/www/"$(basename "$i")" ]] && \
+rm -rf "$i"
+[[ ! -e /config/www/"$(basename "$i")" ]] && \
+cp -R "$i" /config/www/"$(basename "$i")" && \
+rm -rf "$i"
+[[ ! -L "$i" ]] && \
+ln -s /config/www/"$(basename "$i")" "$i"
+done
+
+# symlink data folder
+mv /var/www/localhost/filegator/repository /var/www/localhost/filegator/_repository
+ln -s /data /var/www/localhost/filegator/repository
+
+# permissions
+echo "Setting permissions"
+chown -R abc:abc \
+	/config
+chown -h abc:abc \
+	/var/www/localhost/filegator/repository
