@@ -1,0 +1,5 @@
+#!/bin/bash
+
+source config.env
+
+docker image build --build-arg DOCKER_HUB_USER=$DOCKER_HUB_USER --build-arg IMAGE_BUILD_DATE=$IMAGE_BUILD_DATE --build-arg IMAGE_VERSION=$IMAGE_VERSION --build-arg FILEGATOR_RELEASE=$FILEGATOR_RELEASE -t $DOCKER_HUB_USER/$IMAGE_NAME:$IMAGE_VERSION .
